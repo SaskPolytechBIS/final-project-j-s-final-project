@@ -1,4 +1,8 @@
-
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class EchoServer extends AbstractServer {
@@ -58,6 +62,7 @@ public class EchoServer extends AbstractServer {
             client.setInfo("room", "commons");
             System.out.println(client.getInfo("userId") + " has logged in. "
                     + "they have been place in room " + client.getInfo("room"));
+            
 
         }
         //#join <room>
@@ -135,6 +140,85 @@ public class EchoServer extends AbstractServer {
                 client.sendToClient(returnEnv);
             } catch (Exception e) {
                 System.out.println("Encounter an exception while handling #userstatus command");
+            }
+        }
+        
+                // Save a file to the "uploads" folder in server.
+        if(env.getName().equals("ftpUpload")) 
+        {
+            String fileName = env.getArg();                                     // Get file name from the argument section.
+            
+            byte[] saveBytes = (byte[])env.getMsg();                        // Get file data as an array of bytes from content of an envelope.
+            
+            try
+            {
+                Path savePath = Paths.get("uploads/" + fileName);               // Set path and file name to be saved.
+
+                Files.write(savePath, saveBytes);                               // Write a file. Note: with same name, the file will be replace.
+                
+                client.sendToClient("The file has been saved.");
+            }
+            catch (IOException eio)
+            {
+                System.out.println(eio);
+            }
+        }
+        
+        // Send all uploaded file names to requested client.
+        if(env.getName().equals("ftplist")) 
+        {
+            ArrayList<String> fileNames = new ArrayList<String>();              // Create an array to hold file names.
+
+            File savePath = new File("uploads");                                // Specify the path to the "uploads" folder.
+
+            File[] files = savePath.listFiles();                                // List all files in the "uploads" folder.
+            
+            if (files != null)                                                  // Check if files is not null to avoid NullPointerException
+            {
+                for(File file : files)
+                {                    
+                    fileNames.add(file.getName());                              // Populate the file names.
+                }
+            }
+            
+            // Make an envelope
+            Envelope envToSend = new Envelope("ftplist", "", fileNames);
+
+            // Send envelope back.
+            try {
+                client.sendToClient(envToSend);
+            } catch(Exception e) {
+                System.out.println("Error when trying to send an envelope to the user.");
+                System.out.println(e.toString());
+            }
+        }
+        
+        // Send a file to a requested client.
+        if(env.getName().equals("ftpget")) 
+        {
+            // Get the file name.
+            String fileName = env.getArg();
+            
+            try
+            {
+                Path filePath = Paths.get("uploads/" + fileName);               // Get path of the file to be downloaded.
+
+                byte[] bytes = Files.readAllBytes(filePath);                    // Read file data as bytes from the path.
+                
+                // Create an envelope.
+                Envelope envToSend = new Envelope("ftpget", fileName, bytes);   // Prepare an envelope to client.
+                
+                // Send envelope back.
+                try {
+                    client.sendToClient(envToSend);
+                } catch(Exception e) {
+                    System.out.println("Error when trying to send an envelope to the user.");
+                    System.out.println(e.toString());
+                }
+            }
+            catch (IOException eio)
+            {
+                System.out.println(eio);
             }
         }
     }

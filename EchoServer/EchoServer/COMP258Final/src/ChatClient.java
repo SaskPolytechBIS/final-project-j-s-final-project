@@ -1,5 +1,9 @@
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.*;
 
 /**
@@ -14,7 +18,8 @@ public class ChatClient extends AbstractClient {
      * method in the client.
      */
     ChatIF clientUI;
-
+    // A file to save on the server as an array of bytes. 
+    private byte[] fileBytes = null;
     //Constructors ****************************************************
     /**
      * Constructs an instance of the chat client.
@@ -71,6 +76,36 @@ public class ChatClient extends AbstractClient {
                 //print out userId
                 //get(i) is to arrayList as [i] is to arrays
                 clientUI.display(userStatus.get(i));
+            }
+        // ftplist : List all uploaded files.
+        } else if(env.getName().equals("ftplist")) {
+            
+            clientUI.display("<Uploaded File(s)>: ");
+            
+            for (String name : (ArrayList<String>)env.getMsg()) {
+                //System.out.println(name);
+                clientUI.display(name);
+            }
+        }
+        
+        // ftplist : List all uploaded files.
+        else if(env.getName().equals("ftpget"))
+        {
+            String fileName = env.getArg();                           // Get the file name.
+            
+            byte[] downloadBytes = (byte[])env.getMsg();          // Get file data as an array of bytes from content of an envelope.
+            
+            try
+            {
+                Path savePath = Paths.get("downloads/" + fileName);             // Set path and file name to be saved.
+
+                Files.write(savePath, downloadBytes);                  // Write a file. Note: with same name, the file will be replace.
+                
+                clientUI.display("The file has been downloaded.");
+            }
+            catch (IOException eio)
+            {
+                System.out.println(eio);
             }
         }
     }
@@ -199,6 +234,7 @@ public class ChatClient extends AbstractClient {
                 //send the envelope to the server
                 try {
                     sendToServer(env);
+                    clientUI.display("User:"+userId+" has log in.");
                 } catch (IOException e) {
                     clientUI.display("Error when try to send envelope to server");
                 }
@@ -314,7 +350,76 @@ public class ChatClient extends AbstractClient {
             }
 
         }
+        
+        // Send a file to save to the server.
+        if(message.indexOf("#ftpUpload") >= 0) {
+            
+            if(isConnected()) {
+                // Parse file name as argument.
+                String fileName = message.substring(10).trim();
+                
+                // Create an envelope.
+                Envelope env = new Envelope("ftpUpload", fileName, fileBytes);
+
+                // Send an envelope.
+                sendEnvelope(env);
+            }
+            else {
+                clientUI.display("Must be connected to upload a file.");
+            }
+        }
+        
+        // Get all uploaded file names in the server.
+        if (message.equals("#ftplist")) {
+            
+            if(isConnected()) {
+                // Create an envelope.
+                Envelope env = new Envelope("ftplist", "", "");
+
+                // Send an envelope.
+                sendEnvelope(env);
+            }
+            else {
+                clientUI.display("Must be connected to request information.");
+            }
+        }
+        
+        // Download a file from the server.
+        if(message.indexOf("#ftpget") >= 0) {
+            
+            if(isConnected()) {
+                // Parse file name as argument.
+                String fileName = message.substring(7).trim();
+                
+                // Create an envelope.
+                Envelope env = new Envelope("ftpget", fileName, "");
+
+                // Send an envelope.
+                sendEnvelope(env);
+            }
+            else {
+                clientUI.display("Must be connected to download a file.");
+            }
+        }
+    }
+ /**
+     * This function sends an Envelope (command) to the server.
+     * @param env : envelope (command).
+     */
+    public void sendEnvelope(Envelope env) {
+        try {
+            sendToServer(env);
+        } catch (IOException e) {
+            clientUI.display("Fail to send Envelope.");
+        }
     }
 
+    /**
+     * This function set fileBytes for sending in an Envelope.
+     * @param fileBytes : file data in bytes.
+     */
+    public void setFileBytes(byte[] fileBytes) {
+        this.fileBytes = fileBytes;
+    }
 }
 //End of ChatClient class

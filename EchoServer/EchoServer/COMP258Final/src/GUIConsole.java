@@ -5,8 +5,8 @@
 import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
-import java.io.IOException;
 import java.io.*;
+import java.nio.file.Files;
 
 /**
  * This class constructs the UI for a chat client. It implements the chat
@@ -27,17 +27,20 @@ public class GUIConsole extends JFrame implements ChatIF {
     private JButton logoffB = new JButton("Logoff");
     private JButton sendB = new JButton("Send");
     private JButton quitB = new JButton("Quit");
-
-    private JLabel userIdLB = new JLabel("User Id: ", JLabel.RIGHT);
+    private JButton browseB = new JButton("Browse");
+    private JButton saveB = new JButton("Save");
+    
+    
     private JLabel hostLB = new JLabel("Host: ", JLabel.RIGHT);
     private JLabel portLB = new JLabel("Port: ", JLabel.RIGHT);
+    private JLabel userIdLB = new JLabel("User Id: ", JLabel.RIGHT);
     private JLabel messageLB = new JLabel("Message: ", JLabel.RIGHT);
 
-    private JTextField userIdTxF = new JTextField("");
-    private JTextField messageTxF = new JTextField("");
     private JTextArea hostTxF = new JTextArea("localhost");
     //private JTextArea hostTxF = new JTextArea("127.0.0.1");
     private JTextArea portTxF = new JTextArea("5555");
+    private JTextField userIdTxF = new JTextField("");
+    private JTextField messageTxF = new JTextField("");
     
     private JTextArea messageList = new JTextArea();
 
@@ -46,7 +49,8 @@ public class GUIConsole extends JFrame implements ChatIF {
      * The instance of the client that created this ConsoleChat.
      */
     ChatClient client;
-
+     // Working with files: Declare a blank file object for Browse and Save buttons.
+    private File selectedFile = null;
     //main method
     //  set the host and the port
     //  from command line?
@@ -66,21 +70,23 @@ public class GUIConsole extends JFrame implements ChatIF {
 
         //make the bottom part of the window a grid with
         //6 rows, 2 columns and 5 pixels of vertical and horizontal space
-        bottom.setLayout(new GridLayout(6, 2, 5, 5));
-        bottom.add(userIdLB);
-        bottom.add(userIdTxF);
+        bottom.setLayout(new GridLayout(7, 2, 5, 5));
         bottom.add(hostLB);
         bottom.add(hostTxF);
 
         bottom.add(portLB);
         bottom.add(portTxF);
 
+        bottom.add(userIdLB);
+        bottom.add(userIdTxF);
         bottom.add(messageLB);
         bottom.add(messageTxF);
-
+        
         bottom.add(loginB);
         bottom.add(sendB);
 
+        bottom.add(browseB); 		
+        bottom.add(saveB);
         bottom.add(logoffB);
         bottom.add(quitB);
 
@@ -115,6 +121,63 @@ public class GUIConsole extends JFrame implements ChatIF {
             public void actionPerformed(ActionEvent e) {
                 String userId = userIdTxF.getText();
                 send("#logoff");
+            }
+        });
+        // Browse button.
+        browseB.addActionListener(new ActionListener() 
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                if(client.isConnected())
+                {
+                    JFileChooser fileChooser = new JFileChooser();              // Declare File Chooser
+                    
+                    int choosingStatus = fileChooser.showOpenDialog(bottom);    // Show Open-Dialog that has bottom Jpanel as its parent.
+                    
+                    // Possible outcomes: CANCEL_OPTION, APPROVE_OPTION, and ERROR_OPTION.
+                    if (choosingStatus == JFileChooser.APPROVE_OPTION)          // choosingStatus == 0.
+                    {
+                        selectedFile = fileChooser.getSelectedFile();           // Get a file from fileChooser UI then store in a temporary file.
+                        
+                        display("Selected file: " + selectedFile.getAbsolutePath());
+                    }
+                    else if(choosingStatus == JFileChooser.ERROR_OPTION)        // choosingStatus == -1.
+                    {
+                        display("Error on choosing a file.");
+                    }
+                }
+                else
+                {
+                    display("Please log in first!");
+                }
+            }
+        });
+        
+        // Save button.
+        saveB.addActionListener(new ActionListener() 
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                if(client.isConnected())
+                {
+                    try
+                    {
+                        byte[] fileBytes = Files.readAllBytes(selectedFile.toPath());   // Transform a file into an array of bytes.
+                        
+                        client.setFileBytes(fileBytes);                         // Set file data (array of bytes) in ChatCient (send it separately).
+                        
+                        send("#ftpUpload " + selectedFile.getName());           // Send only command and file name to ChatCient. 
+                    }
+                    catch (IOException eio)
+                    {
+                        display("Error sending file to server.");
+                        System.out.println(eio);
+                    }
+                }
+                else
+                {
+                    display("Please log in first!");
+                }
             }
         });
         try {
