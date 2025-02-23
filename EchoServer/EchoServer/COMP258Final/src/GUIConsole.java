@@ -29,8 +29,7 @@ public class GUIConsole extends JFrame implements ChatIF {
     private JButton quitB = new JButton("Quit");
     private JButton browseB = new JButton("Browse");
     private JButton saveB = new JButton("Save");
-    
-    
+
     private JLabel hostLB = new JLabel("Host: ", JLabel.RIGHT);
     private JLabel portLB = new JLabel("Port: ", JLabel.RIGHT);
     private JLabel userIdLB = new JLabel("User Id: ", JLabel.RIGHT);
@@ -41,7 +40,7 @@ public class GUIConsole extends JFrame implements ChatIF {
     private JTextArea portTxF = new JTextArea("5555");
     private JTextField userIdTxF = new JTextField("");
     private JTextField messageTxF = new JTextField("");
-    
+
     private JTextArea messageList = new JTextArea();
 
     //Instance variables **********************************************
@@ -49,8 +48,9 @@ public class GUIConsole extends JFrame implements ChatIF {
      * The instance of the client that created this ConsoleChat.
      */
     ChatClient client;
-     // Working with files: Declare a blank file object for Browse and Save buttons.
+    // Working with files: Declare a blank file object for Browse and Save buttons.
     private File selectedFile = null;
+
     //main method
     //  set the host and the port
     //  from command line?
@@ -62,15 +62,25 @@ public class GUIConsole extends JFrame implements ChatIF {
         super("Simple Chat GUI");
         //set the size
         setSize(300, 400);
-
+        
+        //set messagelist color
+        messageList.setBackground(Color.BLACK);
+        messageList.setForeground(Color.WHITE);
+        
         setVisible(true);
         JPanel bottom = new JPanel();
         add("Center", messageList);
         add("South", bottom);
 
         //make the bottom part of the window a grid with
-        //6 rows, 2 columns and 5 pixels of vertical and horizontal space
+        //7 rows, 2 columns and 5 pixels of vertical and horizontal space
         bottom.setLayout(new GridLayout(7, 2, 5, 5));
+        // Add a 5-pixel empty border at the top (top, left, bottom, right)
+        bottom.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
+
+        // Set background color to a pale purple (lavender-like)
+        bottom.setBackground(new Color(230, 230, 250));
+        
         bottom.add(hostLB);
         bottom.add(hostTxF);
 
@@ -81,17 +91,15 @@ public class GUIConsole extends JFrame implements ChatIF {
         bottom.add(userIdTxF);
         bottom.add(messageLB);
         bottom.add(messageTxF);
-        
+
         bottom.add(loginB);
         bottom.add(sendB);
 
-        bottom.add(browseB); 		
+        bottom.add(browseB);
         bottom.add(saveB);
         bottom.add(logoffB);
         bottom.add(quitB);
 
-        
-    
         sendB.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String message = messageTxF.getText();
@@ -108,13 +116,13 @@ public class GUIConsole extends JFrame implements ChatIF {
         loginB.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 //update host
-                send("#setHost "+hostTxF.getText());
-                
+                send("#setHost " + hostTxF.getText());
+
                 //update port
-                send("#setPort "+portTxF.getText());
+                send("#setPort " + portTxF.getText());
                 //update the user Id
                 String userId = userIdTxF.getText();
-                send("#login "+userId);
+                send("#login " + userId);
             }
         });
         logoffB.addActionListener(new ActionListener() {
@@ -124,58 +132,44 @@ public class GUIConsole extends JFrame implements ChatIF {
             }
         });
         // Browse button.
-        browseB.addActionListener(new ActionListener() 
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                if(client.isConnected())
-                {
+        browseB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (client.isConnected()) {
                     JFileChooser fileChooser = new JFileChooser();              // Declare File Chooser
-                    
+
                     int choosingStatus = fileChooser.showOpenDialog(bottom);    // Show Open-Dialog that has bottom Jpanel as its parent.
-                    
+
                     // Possible outcomes: CANCEL_OPTION, APPROVE_OPTION, and ERROR_OPTION.
-                    if (choosingStatus == JFileChooser.APPROVE_OPTION)          // choosingStatus == 0.
+                    if (choosingStatus == JFileChooser.APPROVE_OPTION) // choosingStatus == 0.
                     {
                         selectedFile = fileChooser.getSelectedFile();           // Get a file from fileChooser UI then store in a temporary file.
-                        
+
                         display("Selected file: " + selectedFile.getAbsolutePath());
-                    }
-                    else if(choosingStatus == JFileChooser.ERROR_OPTION)        // choosingStatus == -1.
+                    } else if (choosingStatus == JFileChooser.ERROR_OPTION) // choosingStatus == -1.
                     {
                         display("Error on choosing a file.");
                     }
-                }
-                else
-                {
+                } else {
                     display("Please log in first!");
                 }
             }
         });
-        
+
         // Save button.
-        saveB.addActionListener(new ActionListener() 
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                if(client.isConnected())
-                {
-                    try
-                    {
+        saveB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (client.isConnected()) {
+                    try {
                         byte[] fileBytes = Files.readAllBytes(selectedFile.toPath());   // Transform a file into an array of bytes.
-                        
-                        client.setFileBytes(fileBytes);                         // Set file data (array of bytes) in ChatCient (send it separately).
-                        
-                        send("#ftpUpload " + selectedFile.getName());           // Send only command and file name to ChatCient. 
-                    }
-                    catch (IOException eio)
-                    {
+
+                        client.setFileBytes(fileBytes);                         // Set file data (array of bytes) in ChatCient.
+
+                        send("#ftpUpload " + selectedFile.getName());           // Send command
+                    } catch (IOException eio) {
                         display("Error sending file to server.");
                         System.out.println(eio);
                     }
-                }
-                else
-                {
+                } else {
                     display("Please log in first!");
                 }
             }
@@ -183,8 +177,7 @@ public class GUIConsole extends JFrame implements ChatIF {
         try {
             client = new ChatClient(host, port, this);
         } catch (IOException exception) {
-            System.out.println("Error: Can't setup connection!!!!"
-                    + " Terminating client.");
+            System.out.println("Error Can't setup connection.... Terminating client.");
             System.exit(1);
         }
         //Do all other constructor code before showing the window

@@ -143,18 +143,23 @@ public class EchoServer extends AbstractServer {
             }
         }
         
-                // Save a file to the "uploads" folder in server.
+        // #ftpUpload
+        // Save a file to the uploads folder
         if(env.getName().equals("ftpUpload")) 
         {
-            String fileName = env.getArg();                                     // Get file name from the argument section.
+            // Get file name from the argument section.
+            String fileName = env.getArg();                                     
             
-            byte[] saveBytes = (byte[])env.getMsg();                        // Get file data as an array of bytes from content of an envelope.
+            // Get file data as an array of bytes from content of an envelope.
+            byte[] saveBytes = (byte[])env.getMsg();                        
             
             try
             {
-                Path savePath = Paths.get("uploads/" + fileName);               // Set path and file name to be saved.
+                // Set path and file name to be saved.
+                Path savePath = Paths.get("uploads/" + fileName);               
 
-                Files.write(savePath, saveBytes);                               // Write a file. Note: with same name, the file will be replace.
+                // Write a file. (Note: with same name, the file will be replace).
+                Files.write(savePath, saveBytes);                               
                 
                 client.sendToClient("The file has been saved.");
             }
@@ -164,20 +169,26 @@ public class EchoServer extends AbstractServer {
             }
         }
         
-        // Send all uploaded file names to requested client.
+        // #ftplistSend 
+        // all uploaded file names to requested client.
         if(env.getName().equals("ftplist")) 
         {
-            ArrayList<String> fileNames = new ArrayList<String>();              // Create an array to hold file names.
+            // Create an array to hold file names.
+            ArrayList<String> fileNames = new ArrayList<String>();              
 
-            File savePath = new File("uploads");                                // Specify the path to the "uploads" folder.
+            // Specify the path to the uploads folder.
+            File savePath = new File("uploads");                                
 
-            File[] files = savePath.listFiles();                                // List all files in the "uploads" folder.
+            // List all files in the uploads folder.
+            File[] files = savePath.listFiles();                                
             
-            if (files != null)                                                  // Check if files is not null to avoid NullPointerException
+            // Check if files is not null to avoid NullPointerException
+            if (files != null)                                                  
             {
                 for(File file : files)
-                {                    
-                    fileNames.add(file.getName());                              // Populate the file names.
+                {           
+                    //create array of file name
+                    fileNames.add(file.getName());                              
                 }
             }
             
@@ -201,12 +212,14 @@ public class EchoServer extends AbstractServer {
             
             try
             {
-                Path filePath = Paths.get("uploads/" + fileName);               // Get path of the file to be downloaded.
+                // Get path of the file to be downloaded.
+                Path filePath = Paths.get("uploads/" + fileName);               
 
-                byte[] bytes = Files.readAllBytes(filePath);                    // Read file data as bytes from the path.
+                // Read file data as bytes from the path.
+                byte[] bytes = Files.readAllBytes(filePath);                    
                 
-                // Create an envelope.
-                Envelope envToSend = new Envelope("ftpget", fileName, bytes);   // Prepare an envelope to client.
+                // Create an envelope for client.
+                Envelope envToSend = new Envelope("ftpget", fileName, bytes);   
                 
                 // Send envelope back.
                 try {

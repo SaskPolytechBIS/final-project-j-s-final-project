@@ -369,7 +369,7 @@ public class ChatClient extends AbstractClient {
             }
         }
         
-        // Get all uploaded file names in the server.
+        // Display all the files that have been uploaded to the server
         if (message.equals("#ftplist")) {
             
             if(isConnected()) {
@@ -384,7 +384,7 @@ public class ChatClient extends AbstractClient {
             }
         }
         
-        // Download a file from the server.
+        // Download the file specified onto the client in a folder called downloads
         if(message.indexOf("#ftpget") >= 0) {
             
             if(isConnected()) {
