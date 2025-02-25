@@ -29,6 +29,7 @@ public class GUIConsole extends JFrame implements ChatIF {
     private JButton quitB = new JButton("Quit");
     private JButton browseB = new JButton("Browse");
     private JButton saveB = new JButton("Save");
+    private JButton downloadB = new JButton("Download");
 
     private JLabel hostLB = new JLabel("Host: ", JLabel.RIGHT);
     private JLabel portLB = new JLabel("Port: ", JLabel.RIGHT);
@@ -62,11 +63,11 @@ public class GUIConsole extends JFrame implements ChatIF {
         super("Simple Chat GUI");
         //set the size
         setSize(300, 400);
-        
+
         //set messagelist color
         messageList.setBackground(Color.BLACK);
         messageList.setForeground(Color.WHITE);
-        
+
         setVisible(true);
         JPanel bottom = new JPanel();
         add("Center", messageList);
@@ -74,13 +75,13 @@ public class GUIConsole extends JFrame implements ChatIF {
 
         //make the bottom part of the window a grid with
         //7 rows, 2 columns and 5 pixels of vertical and horizontal space
-        bottom.setLayout(new GridLayout(7, 2, 5, 5));
+        bottom.setLayout(new GridLayout(8, 2, 5, 5));
         // Add a 5-pixel empty border at the top (top, left, bottom, right)
         bottom.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
 
         // Set background color to a pale purple (lavender-like)
         bottom.setBackground(new Color(230, 230, 250));
-        
+
         bottom.add(hostLB);
         bottom.add(hostTxF);
 
@@ -97,6 +98,8 @@ public class GUIConsole extends JFrame implements ChatIF {
 
         bottom.add(browseB);
         bottom.add(saveB);
+        bottom.add(downloadB);   // New row: Download button
+        bottom.add(new JLabel("")); // Optional: an empty label for layout symmetry
         bottom.add(logoffB);
         bottom.add(quitB);
 
@@ -168,6 +171,24 @@ public class GUIConsole extends JFrame implements ChatIF {
                     } catch (IOException eio) {
                         display("Error sending file to server.");
                         System.out.println(eio);
+                    }
+                } else {
+                    display("Please log in first!");
+                }
+            }
+        });
+        // Add ActionListener for the Download button:
+        downloadB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (client.isConnected()) {
+                    // Prompt the user to input the filename to download
+                    String fileName = JOptionPane.showInputDialog(
+                            GUIConsole.this,
+                            "Enter the name of the file to download:");
+                    if (fileName != null && !fileName.trim().isEmpty()) {
+                        send("#ftpget " + fileName.trim());
+                    } else {
+                        display("Download cancelled or invalid filename.");
                     }
                 } else {
                     display("Please log in first!");
