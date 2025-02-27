@@ -77,34 +77,36 @@ public class ChatClient extends AbstractClient {
                 //get(i) is to arrayList as [i] is to arrays
                 clientUI.display(userStatus.get(i));
             }
-        // ftplist : List all uploaded files.
-        } else if(env.getName().equals("ftplist")) {
-            
+         // ftplist : List all uploaded files.
+        } else if (env.getName().equals("ftplist")) {
             clientUI.display("<Uploaded File(s)>: ");
+            ArrayList<String> fileList = (ArrayList<String>) env.getMsg();
             
-            for (String name : (ArrayList<String>)env.getMsg()) {
-                //System.out.println(name);
+            for (String name : fileList) {
                 clientUI.display(name);
+            }
+
+            // 🔹 Auto-update GUI file list (Modified)
+            if (clientUI instanceof GUIConsole) {
+                ((GUIConsole) clientUI).updateFileList(fileList);
             }
         }
         
-        // ftplist : List all uploaded files.
-        else if(env.getName().equals("ftpget"))
-        {
-            String fileName = env.getArg();                           // Get the file name.
-            
-            byte[] downloadBytes = (byte[])env.getMsg();          // Get file data as an array of bytes from content of an envelope.
-            
-            try
-            {
-                Path savePath = Paths.get("downloads/" + fileName);             // Set path and file name to be saved.
+        // ftpget : Handle file download (Modified)
+        else if (env.getName().equals("ftpget")) {
+            String fileName = env.getArg();
+            byte[] downloadBytes = (byte[]) env.getMsg();
 
-                Files.write(savePath, downloadBytes);                  // Write a file. Note: with same name, the file will be replace.
+            try {
+                // 🔹 Ensure the Downloads folder exists
+                Path savePath = Paths.get("downloads/" + fileName);
+                Files.createDirectories(savePath.getParent());
+                Files.write(savePath, downloadBytes);  // Save file
                 
-                clientUI.display("The file has been downloaded.");
-            }
-            catch (IOException eio)
-            {
+                clientUI.display("The file has been downloaded and saved to Downloads folder.");
+
+            } catch (IOException eio) {
+                clientUI.display("Error saving downloaded file: " + fileName);
                 System.out.println(eio);
             }
         }

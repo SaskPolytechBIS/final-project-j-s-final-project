@@ -1,3 +1,4 @@
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -62,7 +63,6 @@ public class EchoServer extends AbstractServer {
             client.setInfo("room", "commons");
             System.out.println(client.getInfo("userId") + " has logged in. "
                     + "they have been place in room " + client.getInfo("room"));
-            
 
         }
         //#join <room>
@@ -142,95 +142,87 @@ public class EchoServer extends AbstractServer {
                 System.out.println("Encounter an exception while handling #userstatus command");
             }
         }
-        
+
         // #ftpUpload
         // Save a file to the uploads folder
-        if(env.getName().equals("ftpUpload")) 
-        {
+        if (env.getName().equals("ftpUpload")) {
             // Get file name from the argument section.
-            String fileName = env.getArg();                                     
-            
+            String fileName = env.getArg();
+
             // Get file data as an array of bytes from content of an envelope.
-            byte[] saveBytes = (byte[])env.getMsg();                        
-            
-            try
-            {
+            byte[] saveBytes = (byte[]) env.getMsg();
+
+            try {
                 // Set path and file name to be saved.
-                Path savePath = Paths.get("uploads/" + fileName);               
+                Path savePath = Paths.get("uploads/" + fileName);
 
                 // Write a file. (Note: with same name, the file will be replace).
-                Files.write(savePath, saveBytes);                               
-                
+                Files.write(savePath, saveBytes);
+
                 client.sendToClient("The file has been saved.");
-            }
-            catch (IOException eio)
-            {
+            } catch (IOException eio) {
                 System.out.println(eio);
             }
         }
-        
+
         // #ftplistSend 
         // all uploaded file names to requested client.
-        if(env.getName().equals("ftplist")) 
-        {
+        if (env.getName().equals("ftplist")) {
             // Create an array to hold file names.
-            ArrayList<String> fileNames = new ArrayList<String>();              
+            ArrayList<String> fileNames = new ArrayList<String>();
 
             // Specify the path to the uploads folder.
-            File savePath = new File("uploads");                                
-
+            //File savePath = new File("uploads");                                
             // List all files in the uploads folder.
-            File[] files = savePath.listFiles();                                
-            
-            // Check if files is not null to avoid NullPointerException
-            if (files != null)                                                  
-            {
-                for(File file : files)
-                {           
-                    //create array of file name
-                    fileNames.add(file.getName());                              
+            ///File[] files = savePath.listFiles();               
+            File uploadDir = new File("uploads"); // Ensure folder exists
+
+            if (uploadDir.exists() && uploadDir.isDirectory()) {
+                File[] files = uploadDir.listFiles();
+
+                // Check if files is not null to avoid NullPointerException
+                if (files != null) {
+                    for (File file : files) {
+                        //create array of file name
+                        fileNames.add(file.getName());
+                    }
                 }
             }
-            
             // Make an envelope
             Envelope envToSend = new Envelope("ftplist", "", fileNames);
 
             // Send envelope back.
             try {
                 client.sendToClient(envToSend);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 System.out.println("Error when trying to send an envelope to the user.");
                 System.out.println(e.toString());
             }
         }
-        
+
         // Send a file to a requested client.
-        if(env.getName().equals("ftpget")) 
-        {
+        if (env.getName().equals("ftpget")) {
             // Get the file name.
             String fileName = env.getArg();
-            
-            try
-            {
+
+            try {
                 // Get path of the file to be downloaded.
-                Path filePath = Paths.get("uploads/" + fileName);               
+                Path filePath = Paths.get("uploads/" + fileName);
 
                 // Read file data as bytes from the path.
-                byte[] bytes = Files.readAllBytes(filePath);                    
-                
+                byte[] bytes = Files.readAllBytes(filePath);
+
                 // Create an envelope for client.
-                Envelope envToSend = new Envelope("ftpget", fileName, bytes);   
-                
+                Envelope envToSend = new Envelope("ftpget", fileName, bytes);
+
                 // Send envelope back.
                 try {
                     client.sendToClient(envToSend);
-                } catch(Exception e) {
+                } catch (Exception e) {
                     System.out.println("Error when trying to send an envelope to the user.");
                     System.out.println(e.toString());
                 }
-            }
-            catch (IOException eio)
-            {
+            } catch (IOException eio) {
                 System.out.println(eio);
             }
         }

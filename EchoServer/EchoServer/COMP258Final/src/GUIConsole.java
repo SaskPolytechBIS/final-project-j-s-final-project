@@ -7,6 +7,7 @@ import java.awt.event.*;
 import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
+import java.util.ArrayList;
 
 /**
  * This class constructs the UI for a chat client. It implements the chat
@@ -29,6 +30,7 @@ public class GUIConsole extends JFrame implements ChatIF {
     private JButton quitB = new JButton("Quit");
     private JButton browseB = new JButton("Browse");
     private JButton saveB = new JButton("Save");
+    private JButton downloadB = new JButton("Download"); // New: Download file
 
     private JLabel hostLB = new JLabel("Host: ", JLabel.RIGHT);
     private JLabel portLB = new JLabel("Port: ", JLabel.RIGHT);
@@ -42,6 +44,8 @@ public class GUIConsole extends JFrame implements ChatIF {
     private JTextField messageTxF = new JTextField("");
 
     private JTextArea messageList = new JTextArea();
+    
+    private JComboBox<String> fileListComboBox = new JComboBox<>(); //New: File List
 
     //Instance variables **********************************************
     /**
@@ -61,7 +65,7 @@ public class GUIConsole extends JFrame implements ChatIF {
         //set anme of window
         super("Simple Chat GUI");
         //set the size
-        setSize(300, 400);
+        setSize(350, 450);
         
         //set messagelist color
         messageList.setBackground(Color.BLACK);
@@ -74,7 +78,7 @@ public class GUIConsole extends JFrame implements ChatIF {
 
         //make the bottom part of the window a grid with
         //7 rows, 2 columns and 5 pixels of vertical and horizontal space
-        bottom.setLayout(new GridLayout(7, 2, 5, 5));
+        bottom.setLayout(new GridLayout(9, 2, 5, 5));
         // Add a 5-pixel empty border at the top (top, left, bottom, right)
         bottom.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
 
@@ -97,6 +101,8 @@ public class GUIConsole extends JFrame implements ChatIF {
 
         bottom.add(browseB);
         bottom.add(saveB);
+        bottom.add(fileListComboBox); // File list added
+        bottom.add(downloadB); // Download button
         bottom.add(logoffB);
         bottom.add(quitB);
 
@@ -123,6 +129,9 @@ public class GUIConsole extends JFrame implements ChatIF {
                 //update the user Id
                 String userId = userIdTxF.getText();
                 send("#login " + userId);
+                
+                // 🔹 After login, request the file list
+                send("#ftplist");
             }
         });
         logoffB.addActionListener(new ActionListener() {
@@ -165,6 +174,9 @@ public class GUIConsole extends JFrame implements ChatIF {
                         client.setFileBytes(fileBytes);                         // Set file data (array of bytes) in ChatCient.
 
                         send("#ftpUpload " + selectedFile.getName());           // Send command
+                       
+                        // 🔹 After saving a file, request the file list update
+                        send("#ftplist");
                     } catch (IOException eio) {
                         display("Error sending file to server.");
                         System.out.println(eio);
@@ -174,16 +186,28 @@ public class GUIConsole extends JFrame implements ChatIF {
                 }
             }
         });
+        downloadB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String selectedFile = (String) fileListComboBox.getSelectedItem();
+                if (selectedFile != null) {
+                    send("#ftpget " + selectedFile);  // Request download from server
+                    display("Requesting file: " + selectedFile);
+                } else {
+                    display("No file selected!");
+                }
+            }
+        });
         try {
             client = new ChatClient(host, port, this);
         } catch (IOException exception) {
             System.out.println("Error Can't setup connection.... Terminating client.");
             System.exit(1);
         }
-        //Do all other constructor code before showing the window
+        //Do all other constructor code before showing the window;
         //make the window visible
         setVisible(true);
     }
+    
 
     public void send(String message) {
         client.handleMessageFromClientUI(message);
@@ -202,6 +226,13 @@ public class GUIConsole extends JFrame implements ChatIF {
     public void display(String message) {
         System.out.println(message);
         messageList.append(message + "\n");
+    }
+    
+    public void updateFileList(ArrayList<String> files) {
+        fileListComboBox.removeAllItems(); // Clear existing items
+        for (String file : files) {
+            fileListComboBox.addItem(file); // Populate JComboBox with file names
+        }
     }
 
     public static void main(String[] args) {
