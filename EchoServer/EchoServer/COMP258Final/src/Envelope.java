@@ -7,7 +7,9 @@ import java.io.Serializable;
  */
 
 /**
- *
+ * A serializable wrapper class for sending commands, arguments, and data between client and server.
+ * Serializable =  converting an object into a byte stream so it can be stored or sent over a network
+ * 
  * @author PC
  */
 public class Envelope implements Serializable{

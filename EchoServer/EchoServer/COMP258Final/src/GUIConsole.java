@@ -149,17 +149,21 @@ public class GUIConsole extends JFrame implements ChatIF {
         browseB.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (client.isConnected()) {
-                    JFileChooser fileChooser = new JFileChooser();              // Declare File Chooser
-
-                    int choosingStatus = fileChooser.showOpenDialog(bottom);    // Show Open-Dialog that has bottom Jpanel as its parent.
+                    // Declare File Chooser
+                    JFileChooser fileChooser = new JFileChooser();              
+                    // Show Open-Dialog that has bottom Jpanel as its parent.
+                    int choosingStatus = fileChooser.showOpenDialog(bottom);    
 
                     // Possible outcomes: CANCEL_OPTION, APPROVE_OPTION, and ERROR_OPTION.
-                    if (choosingStatus == JFileChooser.APPROVE_OPTION) // choosingStatus == 0.
+                    // choosingStatus == 0.
+                    if (choosingStatus == JFileChooser.APPROVE_OPTION) 
                     {
-                        selectedFile = fileChooser.getSelectedFile();           // Get a file from fileChooser UI then store in a temporary file.
+                        // Get a file from fileChooser UI then store in a temporary file.
+                        selectedFile = fileChooser.getSelectedFile();           
 
                         display("Selected file: " + selectedFile.getAbsolutePath());
-                    } else if (choosingStatus == JFileChooser.ERROR_OPTION) // choosingStatus == -1.
+                    // choosingStatus == -1.
+                    } else if (choosingStatus == JFileChooser.ERROR_OPTION) 
                     {
                         display("Error on choosing a file.");
                     }
@@ -191,6 +195,7 @@ public class GUIConsole extends JFrame implements ChatIF {
                 }
             }
         });
+        //combo box
         downloadB.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String selectedFile = (String) fileListComboBox.getSelectedItem();

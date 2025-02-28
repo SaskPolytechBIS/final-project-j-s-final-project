@@ -5,7 +5,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-
+/**
+ * Extends AbstractServer.
+ * Implements server logic in handleMessageFromClient(Object msg, ConnectionToClient client).
+ * Dispatches commands such as #ftpUpload (save file to uploads/), #ftplist, #ftpget, etc.
+ * 
+ * @author PC
+ */
 public class EchoServer extends AbstractServer {
     //Class variables *************************************************
 
@@ -53,7 +59,7 @@ public class EchoServer extends AbstractServer {
         }
 
     }
-
+    //second execute
     public void handleClientCommand(Envelope env, ConnectionToClient client) {
         //#login <userId>
         if (env.getName().equals("login")) {

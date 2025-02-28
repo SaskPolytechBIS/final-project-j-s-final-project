@@ -2,9 +2,15 @@
 import java.net.*;
 import java.util.*;
 import java.io.*;
-
+/**
+ * Manages low-level server-side socket listening and client-connection acceptance.
+ * Not meant to be modified heavily—just extended.
+    
+    * I/O streams in Java are objects that provide a way to handle data transfer between your program
+    * and other sources or destinations, such as files, network sockets, or even other programs.
+*/
 public abstract class AbstractServer implements Runnable {
-
+    
     /**
      * The server socket: listens for clients who want to connect.
      */

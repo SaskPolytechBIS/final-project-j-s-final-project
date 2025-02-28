@@ -9,6 +9,10 @@ import java.util.*;
 /**
  * This class overrides some of the methods defined in the abstract superclass
  * in order to give more functionality to the client.
+ * 
+ * reading messages from the client and sending responses back. It also maintains
+ * client-specific information (such as user ID and room) in a HashMap, and it
+ * runs on its own thread to continuously listen for incoming data.
  */
 public class ChatClient extends AbstractClient {
     //Instance variables **********************************************
@@ -53,8 +57,9 @@ public class ChatClient extends AbstractClient {
     }
 
     public void handleServerCommand(Envelope env) {
+        
+        //get out the arrayList of clients in room
         if (env.getName().equals("who")) {
-            //get out the arrayList of clients in room
             ArrayList<String> clientsInRoom = (ArrayList<String>) env.getMsg();
 
             clientUI.display("--User In Room--");
@@ -65,8 +70,9 @@ public class ChatClient extends AbstractClient {
                 //get(i) is to arrayList as [i] is to arrays
                 clientUI.display(clientsInRoom.get(i));
             }
+        
+        //get out the arrayList of clients in room
         } else if (env.getName().equals("userstatus")) {
-            //get out the arrayList of clients in room
             ArrayList<String> userStatus = (ArrayList<String>) env.getMsg();
 
             clientUI.display("--User Status--");
@@ -77,7 +83,7 @@ public class ChatClient extends AbstractClient {
                 //get(i) is to arrayList as [i] is to arrays
                 clientUI.display(userStatus.get(i));
             }
-         // ftplist : List all uploaded files.
+        // ftplist : List all uploaded files.
         } else if (env.getName().equals("ftplist")) {
             clientUI.display("<Uploaded File(s)>: ");
             ArrayList<String> fileList = (ArrayList<String>) env.getMsg();
@@ -155,7 +161,7 @@ public class ChatClient extends AbstractClient {
         System.out.println("Server has shut down");
 
     }
-
+    //first execute
     public void handleClientCommand(String message) {
 
         if (message.equals("#quit")) {
