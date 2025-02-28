@@ -36,6 +36,7 @@ public class GUIConsole extends JFrame implements ChatIF {
     private JLabel portLB = new JLabel("Port: ", JLabel.RIGHT);
     private JLabel userIdLB = new JLabel("User Id: ", JLabel.RIGHT);
     private JLabel messageLB = new JLabel("Message: ", JLabel.RIGHT);
+    private JLabel fileListLB = new JLabel("File List: ", JLabel.RIGHT);
 
     private JTextArea hostTxF = new JTextArea("localhost");
     //private JTextArea hostTxF = new JTextArea("127.0.0.1");
@@ -44,7 +45,7 @@ public class GUIConsole extends JFrame implements ChatIF {
     private JTextField messageTxF = new JTextField("");
 
     private JTextArea messageList = new JTextArea();
-    
+
     private JComboBox<String> fileListComboBox = new JComboBox<>(); //New: File List
 
     //Instance variables **********************************************
@@ -66,14 +67,16 @@ public class GUIConsole extends JFrame implements ChatIF {
         super("Simple Chat GUI");
         //set the size
         setSize(350, 450);
-        
+
         //set messagelist color
         messageList.setBackground(Color.BLACK);
         messageList.setForeground(Color.WHITE);
-        
+
         setVisible(true);
         JPanel bottom = new JPanel();
-        add("Center", messageList);
+        JScrollPane scrollPane = new JScrollPane(messageList);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        add("Center", scrollPane);
         add("South", bottom);
 
         //make the bottom part of the window a grid with
@@ -84,7 +87,7 @@ public class GUIConsole extends JFrame implements ChatIF {
 
         // Set background color to a pale purple (lavender-like)
         bottom.setBackground(new Color(230, 230, 250));
-        
+
         bottom.add(hostLB);
         bottom.add(hostTxF);
 
@@ -96,13 +99,15 @@ public class GUIConsole extends JFrame implements ChatIF {
         bottom.add(messageLB);
         bottom.add(messageTxF);
 
+        bottom.add(fileListLB);
+        bottom.add(fileListComboBox);
         bottom.add(loginB);
         bottom.add(sendB);
 
         bottom.add(browseB);
         bottom.add(saveB);
-        bottom.add(fileListComboBox); // File list added
-        bottom.add(downloadB); // Download button
+
+        bottom.add(downloadB);
         bottom.add(logoffB);
         bottom.add(quitB);
 
@@ -129,7 +134,7 @@ public class GUIConsole extends JFrame implements ChatIF {
                 //update the user Id
                 String userId = userIdTxF.getText();
                 send("#login " + userId);
-                
+
                 // 🔹 After login, request the file list
                 send("#ftplist");
             }
@@ -174,7 +179,7 @@ public class GUIConsole extends JFrame implements ChatIF {
                         client.setFileBytes(fileBytes);                         // Set file data (array of bytes) in ChatCient.
 
                         send("#ftpUpload " + selectedFile.getName());           // Send command
-                       
+
                         // 🔹 After saving a file, request the file list update
                         send("#ftplist");
                     } catch (IOException eio) {
@@ -207,7 +212,6 @@ public class GUIConsole extends JFrame implements ChatIF {
         //make the window visible
         setVisible(true);
     }
-    
 
     public void send(String message) {
         client.handleMessageFromClientUI(message);
@@ -215,8 +219,8 @@ public class GUIConsole extends JFrame implements ChatIF {
 
     //  try to make a chatClient with host port and this
     //  catch io exception
-    //      Shutdown the application
-    //accept method
+    //  Shutdown the application
+    //  accept method
     /**
      * Thus message take a string and display it to the GUI interface CURRENTLY
      * NOT IMPLEMENTED CORRECTLY
@@ -226,8 +230,18 @@ public class GUIConsole extends JFrame implements ChatIF {
     public void display(String message) {
         System.out.println(message);
         messageList.append(message + "\n");
+
+        //Auto-scroll to bottom
+        messageList.setCaretPosition(messageList.getDocument().getLength());
     }
-    
+
+    /**
+     * Updates the JComboBox with a new list of files. This method clears the
+     * existing items in the JComboBox and repopulates it with the provided file
+     * list.
+     *
+     * @param files An ArrayList of file names to be displayed in the JComboBox.
+     */
     public void updateFileList(ArrayList<String> files) {
         fileListComboBox.removeAllItems(); // Clear existing items
         for (String file : files) {
